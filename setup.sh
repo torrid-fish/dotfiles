@@ -211,6 +211,55 @@ install_vim() {
 }
 
 # =============================================================================
+# Install Tmux
+# =============================================================================
+install_tmux() {
+    if is_installed tmux; then
+        print_success "Tmux is already installed: $(get_version tmux)"
+        return 0
+    fi
+
+    print_info "Installing Tmux..."
+    install_package tmux
+    print_success "Tmux installation complete: $(get_version tmux)"
+}
+
+# =============================================================================
+# Install Tmux Plugin Manager (TPM)
+# =============================================================================
+install_tmux_plugins() {
+    local tpm_dir="$HOME/.tmux/plugins/tpm"
+
+    print_info "Setting up Tmux Plugin Manager..."
+
+    # Check if TPM is already installed
+    if [[ -d "$tpm_dir" ]]; then
+        print_success "Tmux Plugin Manager is already installed"
+    else
+        # Clone TPM repository
+        if is_installed git; then
+            print_info "Cloning Tmux Plugin Manager..."
+            git clone https://github.com/tmux-plugins/tpm "$tpm_dir"
+            print_success "Tmux Plugin Manager cloned successfully"
+        else
+            print_warning "Git is not installed, cannot install Tmux Plugin Manager"
+            print_info "Please install TPM manually: git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm"
+            return 1
+        fi
+    fi
+
+    # Install plugins by running TPM's install script
+    if [[ -f "$tpm_dir/bin/install_plugins" ]]; then
+        print_info "Installing Tmux plugins..."
+        "$tpm_dir/bin/install_plugins"
+        print_success "Tmux plugins installed successfully"
+    else
+        print_warning "TPM install script not found"
+        print_info "Plugins will be installed when you start tmux and press the tmux prefix + I (capital I)"
+    fi
+}
+
+# =============================================================================
 # Install Vim Colorscheme (habamax)
 # =============================================================================
 install_vim_colorscheme() {
@@ -282,6 +331,44 @@ setup_vim_config() {
         print_success "Vim config copied to ~/.vimrc"
     else
         print_warning ".vimrc not found, skipping Vim setup"
+    fi
+}
+
+# =============================================================================
+# Setup Tmux Configuration
+# =============================================================================
+setup_tmux_config() {
+    print_info "Setting up Tmux configuration..."
+
+    # Copy .tmux.conf to home directory
+    if [[ -f "$SCRIPT_DIR/.tmux.conf" ]]; then
+        cp "$SCRIPT_DIR/.tmux.conf" "$HOME/.tmux.conf"
+        print_success "Tmux config copied to ~/.tmux.conf"
+    else
+        print_warning ".tmux.conf not found, skipping Tmux setup"
+    fi
+}
+
+# =============================================================================
+# Setup Git Configuration
+# =============================================================================
+setup_git_config() {
+    print_info "Setting up Git configuration..."
+
+    # Copy .gitconfig to home directory
+    if [[ -f "$SCRIPT_DIR/.gitconfig" ]]; then
+        cp "$SCRIPT_DIR/.gitconfig" "$HOME/.gitconfig"
+        print_success "Git config copied to ~/.gitconfig"
+    else
+        print_warning ".gitconfig not found, skipping Git config setup"
+    fi
+
+    # Copy .gitmessage.txt to home directory
+    if [[ -f "$SCRIPT_DIR/.gitmessage.txt" ]]; then
+        cp "$SCRIPT_DIR/.gitmessage.txt" "$HOME/.gitmessage.txt"
+        print_success "Git message template copied to ~/.gitmessage.txt"
+    else
+        print_warning ".gitmessage.txt not found, skipping Git message template setup"
     fi
 }
 
@@ -392,9 +479,13 @@ main() {
     install_omz_plugins
     install_starship
     install_vim
+    install_tmux
     install_vim_colorscheme
     setup_starship_config
     setup_vim_config
+    setup_tmux_config
+    setup_git_config
+    install_tmux_plugins
     setup_zshrc
     set_default_shell
 

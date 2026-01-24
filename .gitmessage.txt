@@ -1,0 +1,63 @@
+# ----------------------------------------------------------------------
+# Conventional Commit Message Template
+# Based on https://www.conventionalcommits.org/en/v1.0.0/
+# ----------------------------------------------------------------------
+
+# HEADER (required)
+# Format:
+#   <type>(<scope>): <short summary>
+# or (with breaking change):
+#   <type>(<scope>)!: <short summary>
+#
+# <type> must be one of:
+#   feat     - A new feature
+#   fix      - A bug fix
+#   docs     - Documentation only changes
+#   style    - Code style changes (formatting, semicolons, etc.)
+#   refactor - Code change that neither fixes a bug nor adds a feature
+#   perf     - Improves performance
+#   test     - Adds or corrects tests
+#   build    - Build system or dependencies
+#   ci       - CI configuration/scripts
+#   chore    - Routine maintenance
+#   revert   - Reverts a previous commit
+#
+# <scope> is optional (e.g., ui, api, core, auth, deps).
+# <short summary> ≤ 72 chars (dont longer than the dash line, imperative
+# (e.g., "add", "fix", "update") in lowercase.
+#
+# Examples:
+#   feat(api): add JWT authentication middleware
+#   fix(ui)!: remove deprecated button variants
+#
+# ----------------------------------------------------------------------
+
+# If this commit includes a BREAKING CHANGE, add "!" after <scope>) in  
+# the header
+# AND include a BREAKING CHANGE block in the footer below.
+
+# ----------------------------------------------------------------------
+# BODY (optional)
+# Describe WHAT and WHY (not how). Include context, trade-offs, and 
+# alternatives.
+# Wrap lines at ~72 chars.
+#
+# Example:
+#   Introduce a shared middleware for JWT verification across protected
+#   routes.
+#   Reduces duplicated logic and standardizes error responses.
+# ----------------------------------------------------------------------
+
+# ----------------------------------------------------------------------
+# FOOTER (optional)
+# Use for metadata:
+# - BREAKING CHANGES: Start a block with "BREAKING CHANGE:" and explain 
+#   impact. Include migration steps and rationale.
+# - Issue refs: Closes #123, Fixes #456, Refs #789
+#
+# Examples:
+#   BREAKING CHANGE: remove deprecated /v1 endpoints in favor of /v2.
+#   Migration: update client base URL to /v2 and switch to OAuth2
+#   tokens.
+#   Closes #351, #422
+# ----------------------------------------------------------------------
