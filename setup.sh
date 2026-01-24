@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # =============================================================================
-# ZSH + Starship + Oh-My-Zsh Auto Installation Script
+# Torridfish Zsh Setup Script
 # =============================================================================
 
 set -e  # Exit on error
@@ -48,6 +48,62 @@ print_error() {
 }
 
 # =============================================================================
+# Check if command exists and is installed
+# =============================================================================
+is_installed() {
+    local cmd="$1"
+    if command -v "$cmd" &> /dev/null; then
+        return 0
+    fi
+    return 1
+}
+
+# =============================================================================
+# Get version of installed command
+# =============================================================================
+get_version() {
+    local cmd="$1"
+    if is_installed "$cmd"; then
+        "$cmd" --version 2>&1 | head -n 1
+    else
+        echo "Not installed"
+    fi
+}
+
+# =============================================================================
+# Install package using appropriate package manager
+# =============================================================================
+install_package() {
+    local package_name="$1"
+    
+    case $OS in
+        ubuntu|debian|pop)
+            $SUDO apt update
+            $SUDO apt install -y "$package_name"
+            ;;
+        fedora)
+            $SUDO dnf install -y "$package_name"
+            ;;
+        centos|rhel)
+            $SUDO yum install -y "$package_name"
+            ;;
+        arch|manjaro)
+            $SUDO pacman -S --noconfirm "$package_name"
+            ;;
+        alpine)
+            $SUDO apk add --no-cache "$package_name"
+            ;;
+        macos)
+            brew install "$package_name"
+            ;;
+        *)
+            print_error "Unsupported OS: $OS"
+            return 1
+            ;;
+    esac
+}
+
+# =============================================================================
 # Detect Operating System
 # =============================================================================
 detect_os() {
@@ -66,41 +122,14 @@ detect_os() {
 # Install ZSH
 # =============================================================================
 install_zsh() {
-    if command -v zsh &> /dev/null; then
-        print_success "ZSH is already installed: $(zsh --version)"
+    if is_installed zsh; then
+        print_success "ZSH is already installed: $(get_version zsh)"
         return 0
     fi
 
     print_info "Installing ZSH..."
-
-    case $OS in
-        ubuntu|debian|pop)
-            $SUDO apt update
-            $SUDO apt install -y zsh
-            ;;
-        fedora)
-            $SUDO dnf install -y zsh
-            ;;
-        centos|rhel)
-            $SUDO yum install -y zsh
-            ;;
-        arch|manjaro)
-            $SUDO pacman -S --noconfirm zsh
-            ;;
-        alpine)
-            $SUDO apk add --no-cache zsh git curl
-            ;;
-        macos)
-            brew install zsh
-            ;;
-        *)
-            print_error "Unsupported OS: $OS"
-            print_info "Please install ZSH manually"
-            return 1
-            ;;
-    esac
-
-    print_success "ZSH installation complete: $(zsh --version)"
+    install_package zsh
+    print_success "ZSH installation complete: $(get_version zsh)"
 }
 
 # =============================================================================
@@ -154,8 +183,8 @@ install_omz_plugins() {
 # Install Starship
 # =============================================================================
 install_starship() {
-    if command -v starship &> /dev/null; then
-        print_success "Starship is already installed: $(starship --version)"
+    if is_installed starship; then
+        print_success "Starship is already installed: $(get_version starship)"
         return 0
     fi
 
@@ -165,6 +194,62 @@ install_starship() {
     curl -sS https://starship.rs/install.sh | sh -s -- -y
 
     print_success "Starship installation complete"
+}
+
+# =============================================================================
+# Install Vim
+# =============================================================================
+install_vim() {
+    if is_installed vim; then
+        print_success "Vim is already installed: $(get_version vim)"
+        return 0
+    fi
+
+    print_info "Installing Vim..."
+    install_package vim
+    print_success "Vim installation complete: $(get_version vim)"
+}
+
+# =============================================================================
+# Install Vim Colorscheme (habamax)
+# =============================================================================
+install_vim_colorscheme() {
+    local vim_colors_dir="$HOME/.vim/colors"
+    local habamax_file="$vim_colors_dir/habamax.vim"
+
+    print_info "Setting up Vim habamax colorscheme..."
+
+    # Create ~/.vim/colors directory if it doesn't exist
+    mkdir -p "$vim_colors_dir"
+
+    # Check if habamax colorscheme already exists
+    if [[ -f "$habamax_file" ]]; then
+        print_success "habamax colorscheme is already installed"
+        return 0
+    fi
+
+    # Try to download habamax colorscheme from GitHub
+    if is_installed curl; then
+        print_info "Downloading habamax colorscheme from GitHub..."
+        if curl -fsSL https://raw.githubusercontent.com/habamax/vim-habamax/master/colors/habamax.vim -o "$habamax_file"; then
+            print_success "habamax colorscheme downloaded successfully"
+            return 0
+        else
+            print_warning "Failed to download habamax colorscheme"
+        fi
+    elif is_installed wget; then
+        print_info "Downloading habamax colorscheme from GitHub (using wget)..."
+        if wget -q https://raw.githubusercontent.com/habamax/vim-habamax/master/colors/habamax.vim -O "$habamax_file"; then
+            print_success "habamax colorscheme downloaded successfully"
+            return 0
+        else
+            print_warning "Failed to download habamax colorscheme"
+        fi
+    else
+        print_warning "curl and wget not available, skipping habamax download"
+    fi
+
+    print_info "habamax colorscheme will fall back to default theme"
 }
 
 # =============================================================================
@@ -265,7 +350,7 @@ set_default_shell() {
         fi
 
         # Use chsh if available, otherwise modify passwd directly (for Docker)
-        if command -v chsh &> /dev/null; then
+        if is_installed chsh; then
             chsh -s "$zsh_path"
         else
             # For minimal Docker images without chsh
@@ -306,6 +391,8 @@ main() {
     install_oh_my_zsh
     install_omz_plugins
     install_starship
+    install_vim
+    install_vim_colorscheme
     setup_starship_config
     setup_vim_config
     setup_zshrc
