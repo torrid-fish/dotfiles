@@ -16,6 +16,21 @@ NC='\033[0m' # No Color
 # Get the directory where this script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Determine if we need sudo (empty if running as root)
+if [[ $EUID -eq 0 ]]; then
+    SUDO=""
+    IS_ROOT=true
+else
+    SUDO="sudo"
+    IS_ROOT=false
+fi
+
+# Check for non-interactive mode (useful for Docker)
+NON_INTERACTIVE=false
+if [[ "$1" == "-y" ]] || [[ "$1" == "--yes" ]]; then
+    NON_INTERACTIVE=true
+fi
+
 print_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
 }
@@ -60,17 +75,20 @@ install_zsh() {
 
     case $OS in
         ubuntu|debian|pop)
-            sudo apt update
-            sudo apt install -y zsh
+            $SUDO apt update
+            $SUDO apt install -y zsh
             ;;
         fedora)
-            sudo dnf install -y zsh
+            $SUDO dnf install -y zsh
             ;;
         centos|rhel)
-            sudo yum install -y zsh
+            $SUDO yum install -y zsh
             ;;
         arch|manjaro)
-            sudo pacman -S --noconfirm zsh
+            $SUDO pacman -S --noconfirm zsh
+            ;;
+        alpine)
+            $SUDO apk add --no-cache zsh git curl
             ;;
         macos)
             brew install zsh
@@ -168,6 +186,21 @@ setup_starship_config() {
 }
 
 # =============================================================================
+# Setup Vim Configuration
+# =============================================================================
+setup_vim_config() {
+    print_info "Setting up Vim configuration..."
+
+    # Copy .vimrc to home directory
+    if [[ -f "$SCRIPT_DIR/.vimrc" ]]; then
+        cp "$SCRIPT_DIR/.vimrc" "$HOME/.vimrc"
+        print_success "Vim config copied to ~/.vimrc"
+    else
+        print_warning ".vimrc not found, skipping Vim setup"
+    fi
+}
+
+# =============================================================================
 # Setup .zshrc
 # =============================================================================
 setup_zshrc() {
@@ -214,19 +247,30 @@ set_default_shell() {
         return 0
     fi
 
-    print_info "Do you want to set ZSH as the default shell? (y/n)"
-    read -r response
+    # In non-interactive mode, automatically set ZSH as default
+    if [[ "$NON_INTERACTIVE" == true ]]; then
+        response="y"
+    else
+        print_info "Do you want to set ZSH as the default shell? (y/n)"
+        read -r response
+    fi
 
     if [[ "$response" =~ ^[Yy]$ ]]; then
         local zsh_path=$(which zsh)
         
         # Ensure zsh is in /etc/shells
-        if ! grep -q "$zsh_path" /etc/shells; then
+        if [[ -f /etc/shells ]] && ! grep -q "$zsh_path" /etc/shells; then
             print_info "Adding $zsh_path to /etc/shells..."
-            echo "$zsh_path" | sudo tee -a /etc/shells
+            echo "$zsh_path" | $SUDO tee -a /etc/shells
         fi
 
-        chsh -s "$zsh_path"
+        # Use chsh if available, otherwise modify passwd directly (for Docker)
+        if command -v chsh &> /dev/null; then
+            chsh -s "$zsh_path"
+        else
+            # For minimal Docker images without chsh
+            $SUDO sed -i "s|$(whoami):.*:/bin/.*|$(whoami):x:$(id -u):$(id -g)::$HOME:$zsh_path|" /etc/passwd
+        fi
         print_success "Default shell changed to ZSH"
         print_info "Please log out and log back in to apply changes"
     else
@@ -240,11 +284,19 @@ set_default_shell() {
 main() {
     echo ""
     echo "=========================================="
-    echo "  ZSH + Starship + Oh-My-Zsh Setup Script"
+    echo "  Torridfish Zsh Setup Script"
     echo "=========================================="
     echo ""
 
     detect_os
+
+    if [[ "$IS_ROOT" == true ]]; then
+        print_info "Running as root, sudo not required"
+    fi
+
+    if [[ "$NON_INTERACTIVE" == true ]]; then
+        print_info "Running in non-interactive mode"
+    fi
 
     echo ""
     print_info "Starting installation..."
@@ -255,6 +307,7 @@ main() {
     install_omz_plugins
     install_starship
     setup_starship_config
+    setup_vim_config
     setup_zshrc
     set_default_shell
 
