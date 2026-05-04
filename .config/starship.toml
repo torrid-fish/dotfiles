@@ -2,7 +2,7 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 
 # Inserts a blank line between shell prompts
-add_newline = true
+add_newline = false
 
 # Replace the '❯' symbol in the prompt with '➜'
 [character] # The name of the module we are configuring is 'character'
@@ -13,12 +13,12 @@ success_symbol = '[✎](bold green)' # The 'success_symbol' segment is being set
 disabled = true
 
 [username]
-show_always = true
-style_user = "bold blue"
-style_root = "bold red"
-format = "[$user]($style) "
+show_always = true      # 設為 true，即使在本地端也會顯示
+style_user = "bold blue" # 設定一般使用者的顏色
+style_root = "bold red" # 設定 root 使用者的顏色
+format = "[$user]($style) " # 顯示格式
 
 [hostname]
-ssh_only = false
-style = "bold green"
-format = "[$hostname]($style) "
+ssh_only = false        # 設為 false，在本地端也會顯示
+style = "bold green"    # 設定主機名的顏色
+format = "[$hostname]($style) " # 顯示格式

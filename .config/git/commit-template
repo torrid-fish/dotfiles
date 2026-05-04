@@ -32,6 +32,8 @@
 #
 # ----------------------------------------------------------------------
 
+#<type>(<scope>): <short summary>
+
 # If this commit includes a BREAKING CHANGE, add "!" after <scope>) in  
 # the header
 # AND include a BREAKING CHANGE block in the footer below.
@@ -48,6 +50,8 @@
 #   Reduces duplicated logic and standardizes error responses.
 # ----------------------------------------------------------------------
 
+#<body>
+
 # ----------------------------------------------------------------------
 # FOOTER (optional)
 # Use for metadata:
@@ -61,3 +65,7 @@
 #   tokens.
 #   Closes #351, #422
 # ----------------------------------------------------------------------
+
+#<footer>
+
+

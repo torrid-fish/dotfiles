@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # =============================================================================
-# Torridfish Zsh Setup Script
+# Torridfish Dotfiles Setup Script
+# All configs follow XDG Base Directory convention (~/.config/)
 # =============================================================================
 
 set -e  # Exit on error
@@ -116,6 +117,37 @@ detect_os() {
         OS="unknown"
     fi
     print_info "Detected OS: $OS"
+}
+
+# =============================================================================
+# Copy XDG config directory contents
+# Copies all files from $SCRIPT_DIR/.config/$subdir/ to ~/.config/$subdir/
+# Removes legacy dotfile from home if it exists (to avoid overriding XDG)
+# =============================================================================
+copy_xdg_config() {
+    local subdir="$1"
+    local legacy_files=("${@:2}")  # legacy home dotfiles to remove
+
+    local src="$SCRIPT_DIR/.config/$subdir"
+    local dst="$HOME/.config/$subdir"
+
+    if [[ ! -d "$src" ]]; then
+        print_warning "$subdir config not found in dotfiles, skipping"
+        return 1
+    fi
+
+    mkdir -p "$dst"
+    cp -r "$src"/* "$dst/" 2>/dev/null || true
+    print_success "$subdir config copied to ~/.config/$subdir/"
+
+    for legacy in "${legacy_files[@]}"; do
+        if [[ -f "$HOME/$legacy" ]]; then
+            mv "$HOME/$legacy" "$HOME/$legacy.bak"
+            print_warning "Moved legacy ~/$legacy to ~/$legacy.bak (XDG config takes priority)"
+        fi
+    done
+
+    return 0
 }
 
 # =============================================================================
@@ -260,59 +292,22 @@ install_tmux_plugins() {
 }
 
 # =============================================================================
-# Install Vim Colorscheme (habamax)
+# Setup Git Configuration (XDG: ~/.config/git/)
 # =============================================================================
-install_vim_colorscheme() {
-    local vim_colors_dir="$HOME/.vim/colors"
-    local habamax_file="$vim_colors_dir/habamax.vim"
-
-    print_info "Setting up Vim habamax colorscheme..."
-
-    # Create ~/.vim/colors directory if it doesn't exist
-    mkdir -p "$vim_colors_dir"
-
-    # Check if habamax colorscheme already exists
-    if [[ -f "$habamax_file" ]]; then
-        print_success "habamax colorscheme is already installed"
-        return 0
-    fi
-
-    # Try to download habamax colorscheme from GitHub
-    if is_installed curl; then
-        print_info "Downloading habamax colorscheme from GitHub..."
-        if curl -fsSL https://raw.githubusercontent.com/habamax/vim-habamax/master/colors/habamax.vim -o "$habamax_file"; then
-            print_success "habamax colorscheme downloaded successfully"
-            return 0
-        else
-            print_warning "Failed to download habamax colorscheme"
-        fi
-    elif is_installed wget; then
-        print_info "Downloading habamax colorscheme from GitHub (using wget)..."
-        if wget -q https://raw.githubusercontent.com/habamax/vim-habamax/master/colors/habamax.vim -O "$habamax_file"; then
-            print_success "habamax colorscheme downloaded successfully"
-            return 0
-        else
-            print_warning "Failed to download habamax colorscheme"
-        fi
-    else
-        print_warning "curl and wget not available, skipping habamax download"
-    fi
-
-    print_info "habamax colorscheme will fall back to default theme"
+setup_git_config() {
+    print_info "Setting up Git configuration..."
+    copy_xdg_config git ".gitconfig" ".gitmessage.txt"
 }
 
 # =============================================================================
-# Setup Starship Configuration
+# Setup Starship Configuration (XDG: ~/.config/starship.toml)
 # =============================================================================
 setup_starship_config() {
     print_info "Setting up Starship configuration..."
-
-    # Create ~/.config directory if it doesn't exist
     mkdir -p "$HOME/.config"
 
-    # Copy starship.toml to ~/.config/
-    if [[ -f "$SCRIPT_DIR/starship.toml" ]]; then
-        cp "$SCRIPT_DIR/starship.toml" "$HOME/.config/starship.toml"
+    if [[ -f "$SCRIPT_DIR/.config/starship.toml" ]]; then
+        cp "$SCRIPT_DIR/.config/starship.toml" "$HOME/.config/starship.toml"
         print_success "Starship config copied to ~/.config/starship.toml"
     else
         print_warning "starship.toml not found, please configure manually"
@@ -320,56 +315,43 @@ setup_starship_config() {
 }
 
 # =============================================================================
-# Setup Vim Configuration
+# Setup Vim Configuration (XDG: ~/.config/vim/)
 # =============================================================================
 setup_vim_config() {
     print_info "Setting up Vim configuration..."
-
-    # Copy .vimrc to home directory
-    if [[ -f "$SCRIPT_DIR/.vimrc" ]]; then
-        cp "$SCRIPT_DIR/.vimrc" "$HOME/.vimrc"
-        print_success "Vim config copied to ~/.vimrc"
-    else
-        print_warning ".vimrc not found, skipping Vim setup"
-    fi
+    copy_xdg_config vim ".vimrc"
 }
 
 # =============================================================================
-# Setup Tmux Configuration
+# Setup Tmux Configuration (XDG: ~/.config/tmux/)
 # =============================================================================
 setup_tmux_config() {
     print_info "Setting up Tmux configuration..."
-
-    # Copy .tmux.conf to home directory
-    if [[ -f "$SCRIPT_DIR/.tmux.conf" ]]; then
-        cp "$SCRIPT_DIR/.tmux.conf" "$HOME/.tmux.conf"
-        print_success "Tmux config copied to ~/.tmux.conf"
-    else
-        print_warning ".tmux.conf not found, skipping Tmux setup"
-    fi
+    copy_xdg_config tmux ".tmux.conf"
 }
 
 # =============================================================================
-# Setup Git Configuration
+# Setup fcitx5 Configuration (XDG: ~/.config/fcitx5/)
 # =============================================================================
-setup_git_config() {
-    print_info "Setting up Git configuration..."
+setup_fcitx5_config() {
+    print_info "Setting up fcitx5 configuration..."
+    copy_xdg_config fcitx5
+}
 
-    # Copy .gitconfig to home directory
-    if [[ -f "$SCRIPT_DIR/.gitconfig" ]]; then
-        cp "$SCRIPT_DIR/.gitconfig" "$HOME/.gitconfig"
-        print_success "Git config copied to ~/.gitconfig"
-    else
-        print_warning ".gitconfig not found, skipping Git config setup"
-    fi
+# =============================================================================
+# Setup btop Configuration (XDG: ~/.config/btop/)
+# =============================================================================
+setup_btop_config() {
+    print_info "Setting up btop configuration..."
+    copy_xdg_config btop
+}
 
-    # Copy .gitmessage.txt to home directory
-    if [[ -f "$SCRIPT_DIR/.gitmessage.txt" ]]; then
-        cp "$SCRIPT_DIR/.gitmessage.txt" "$HOME/.gitmessage.txt"
-        print_success "Git message template copied to ~/.gitmessage.txt"
-    else
-        print_warning ".gitmessage.txt not found, skipping Git message template setup"
-    fi
+# =============================================================================
+# Setup GitHub CLI Configuration (XDG: ~/.config/gh/)
+# =============================================================================
+setup_gh_config() {
+    print_info "Setting up GitHub CLI configuration..."
+    copy_xdg_config gh
 }
 
 # =============================================================================
@@ -456,7 +438,7 @@ set_default_shell() {
 main() {
     echo ""
     echo "=========================================="
-    echo "  Torridfish Zsh Setup Script"
+    echo "  Torridfish Dotfiles Setup"
     echo "=========================================="
     echo ""
 
@@ -480,12 +462,14 @@ main() {
     install_starship
     install_vim
     install_tmux
-    install_vim_colorscheme
+    setup_git_config
     setup_starship_config
     setup_vim_config
     setup_tmux_config
-    setup_git_config
     install_tmux_plugins
+    setup_fcitx5_config
+    setup_btop_config
+    setup_gh_config
     setup_zshrc
     set_default_shell
 
@@ -494,10 +478,10 @@ main() {
     print_success "Installation complete!"
     echo "=========================================="
     echo ""
+    print_info "All configs are installed to ~/.config/ (XDG Base Directory)"
+    print_info "Legacy dotfiles (if found) backed up with .bak extension"
     print_info "Please restart your terminal or run 'source ~/.zshrc' to apply changes"
     echo ""
 }
 
 main "$@"
-
-# 
