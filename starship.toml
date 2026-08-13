@@ -1,0 +1,40 @@
+# Get editor completions based on the config schema
+"$schema" = 'https://starship.rs/config-schema.json'
+
+# Inserts a blank line between shell prompts
+add_newline = false
+
+# Allow longer directory scans so slow FUSE mounts (e.g. google-drive-ocamlfuse)
+# don't trigger "Scanning current directory timed out" warnings.
+scan_timeout = 500
+
+# Don't follow symlinks into slow FUSE mounts
+follow_symlinks = false
+
+[git_status]
+disabled = true  # Biggest scan offender — walks entire working tree
+
+# Replace the '❯' symbol in the prompt with '➜'
+[character] # The name of the module we are configuring is 'character'
+success_symbol = '[✎](bold green)' # The 'success_symbol' segment is being set to '➜' with the color 'bold green'
+
+# Disable the package module, hiding it from the prompt completely
+[package]
+disabled = true
+
+[nodejs]
+# Don't treat a bare node_modules/ as a Node project — stray installs (e.g. an
+# npm install that ran with cwd=$HOME) would otherwise light up the prompt in ~.
+# Real projects still detect via package.json / .nvmrc / .node-version / *.js|ts.
+detect_folders = []
+
+[username]
+show_always = true      # Show username even on local sessions
+style_user = "bold blue" # Color for regular users
+style_root = "bold red" # Color for root user
+format = "[$user]($style) " # Display format
+
+[hostname]
+ssh_only = false        # Show hostname even on local sessions
+style = "bold green"    # Hostname color
+format = "[$hostname]($style) " # Display format

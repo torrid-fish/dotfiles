@@ -120,15 +120,38 @@ detect_os() {
 }
 
 # =============================================================================
-# Copy XDG config directory contents
-# Copies all files from $SCRIPT_DIR/.config/$subdir/ to ~/.config/$subdir/
-# Removes legacy dotfile from home if it exists (to avoid overriding XDG)
+# Link a repository path into the user's home directory
+# The repository is the source of truth; existing regular files/directories are
+# preserved as .bak before a symlink is created.
+# =============================================================================
+link_path() {
+    local src="$1"
+    local dst="$2"
+    local backup="${dst}.bak"
+
+    mkdir -p "$(dirname "$dst")"
+
+    if [[ -L "$dst" ]]; then
+        rm "$dst"
+    elif [[ -e "$dst" ]]; then
+        if [[ -e "$backup" || -L "$backup" ]]; then
+            backup="${dst}.bak.$(date +%Y%m%d%H%M%S)"
+        fi
+        mv "$dst" "$backup"
+        print_warning "Moved existing $dst to $backup"
+    fi
+
+    ln -s "$src" "$dst"
+    print_success "Linked $dst -> $src"
+}
+
+# =============================================================================
+# Link an XDG config directory from the dotfiles repository
 # =============================================================================
 copy_xdg_config() {
     local subdir="$1"
-    local legacy_files=("${@:2}")  # legacy home dotfiles to remove
-
-    local src="$SCRIPT_DIR/.config/$subdir"
+    local legacy_files=("${@:2}")
+    local src="$SCRIPT_DIR/$subdir"
     local dst="$HOME/.config/$subdir"
 
     if [[ ! -d "$src" ]]; then
@@ -136,18 +159,14 @@ copy_xdg_config() {
         return 1
     fi
 
-    mkdir -p "$dst"
-    cp -r "$src"/* "$dst/" 2>/dev/null || true
-    print_success "$subdir config copied to ~/.config/$subdir/"
+    link_path "$src" "$dst"
 
     for legacy in "${legacy_files[@]}"; do
-        if [[ -f "$HOME/$legacy" ]]; then
+        if [[ -e "$HOME/$legacy" && ! -L "$HOME/$legacy" ]]; then
             mv "$HOME/$legacy" "$HOME/$legacy.bak"
-            print_warning "Moved legacy ~/$legacy to ~/$legacy.bak (XDG config takes priority)"
+            print_warning "Moved legacy ~/$legacy to ~/$legacy.bak"
         fi
     done
-
-    return 0
 }
 
 # =============================================================================
@@ -306,9 +325,8 @@ setup_starship_config() {
     print_info "Setting up Starship configuration..."
     mkdir -p "$HOME/.config"
 
-    if [[ -f "$SCRIPT_DIR/.config/starship.toml" ]]; then
-        cp "$SCRIPT_DIR/.config/starship.toml" "$HOME/.config/starship.toml"
-        print_success "Starship config copied to ~/.config/starship.toml"
+    if [[ -f "$SCRIPT_DIR/starship.toml" ]]; then
+        link_path "$SCRIPT_DIR/starship.toml" "$HOME/.config/starship.toml"
     else
         print_warning "starship.toml not found, please configure manually"
     fi
@@ -355,39 +373,24 @@ setup_gh_config() {
 }
 
 # =============================================================================
-# Setup .zshrc
+# Setup home-level shell files
+# =============================================================================
+setup_home_configs() {
+    print_info "Linking home-level configuration files..."
+    for file in .bashrc .bash_logout .profile .zshrc.pre-oh-my-zsh .shell.pre-oh-my-zsh; do
+        if [[ -f "$SCRIPT_DIR/$file" ]]; then
+            link_path "$SCRIPT_DIR/$file" "$HOME/$file"
+        fi
+    done
+}
+
+# =============================================================================
+# Setup Zsh configuration
 # =============================================================================
 setup_zshrc() {
-    print_info "Setting up .zshrc..."
-
-    local zshrc="$HOME/.zshrc"
-
-    # Configure plugins
-    if [[ -f "$zshrc" ]]; then
-        # Check if plugins setting exists and update to our required plugins
-        if grep -q "^plugins=" "$zshrc"; then
-            # Backup original setting
-            sed -i.bak 's/^plugins=.*/plugins=(git zsh-autosuggestions zsh-syntax-highlighting)/' "$zshrc"
-            print_success "Updated plugins configuration"
-        else
-            # Add plugins before source $ZSH/oh-my-zsh.sh
-            sed -i.bak '/source \$ZSH\/oh-my-zsh.sh/i plugins=(git zsh-autosuggestions zsh-syntax-highlighting)' "$zshrc"
-            print_success "Added plugins configuration"
-        fi
-    fi
-
-    # Check if starship init already exists
-    if [[ -f "$zshrc" ]] && grep -q "starship init zsh" "$zshrc"; then
-        print_success "Starship init already exists in .zshrc"
-        return 0
-    fi
-
-    # Add starship init to the end of .zshrc
-    echo '' >> "$zshrc"
-    echo '# Starship prompt' >> "$zshrc"
-    echo 'eval "$(starship init zsh)"' >> "$zshrc"
-
-    print_success "Added Starship init to .zshrc"
+    print_info "Linking Zsh configuration..."
+    link_path "$SCRIPT_DIR/zsh/.zshrc" "$HOME/.zshrc"
+    link_path "$SCRIPT_DIR/zsh/.zshenv" "$HOME/.zshenv"
 }
 
 # =============================================================================
@@ -470,6 +473,7 @@ main() {
     setup_fcitx5_config
     setup_btop_config
     setup_gh_config
+    setup_home_configs
     setup_zshrc
     set_default_shell
 
@@ -478,8 +482,8 @@ main() {
     print_success "Installation complete!"
     echo "=========================================="
     echo ""
-    print_info "All configs are installed to ~/.config/ (XDG Base Directory)"
-    print_info "Legacy dotfiles (if found) backed up with .bak extension"
+    print_info "Dotfiles repository is the source of truth: $SCRIPT_DIR"
+    print_info "Configs are deployed with symlinks; existing files are backed up with .bak"
     print_info "Please restart your terminal or run 'source ~/.zshrc' to apply changes"
     echo ""
 }

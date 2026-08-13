@@ -1,49 +1,52 @@
 # Dotfiles
 
-Automated setup script for a Zsh development environment following [XDG Base Directory](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html) convention. All configs live under `~/.config/`.
+Personal configuration repository. `~/.dotfiles` is the source of truth;
+configuration files are deployed to their conventional home/XDG locations with
+symbolic links.
 
-## Features
+## Layout
 
-- **Zsh Shell** - Modern shell with improved scripting capabilities
-- **Oh-My-Zsh** - Zsh framework with plugin support (git, zsh-autosuggestions, zsh-syntax-highlighting)
-- **Starship Prompt** - Fast, customizable cross-shell prompt
-- **Git** - User settings, LFS, commit template, aliases (`sync`, `graph`)
-- **Vim** - Optimized settings with habamax colorscheme
-- **Tmux** - Terminal multiplexer with TPM and solarized theme
-- **fcitx5** - Input method (Boshiamy, Mozc, shortcuts)
-- **btop** - System monitor preferences
-- **GitHub CLI** - gh preferences and aliases
+The repository root directly contains the configuration directories. There is
+no extra `.config` directory inside the repository:
 
-## Installation
-
-```bash
-git clone https://github.com/torrid-fish/zsh_env.git
-cd zsh_env
-./setup.sh -y
+```text
+~/.dotfiles/
+├── .bashrc                 # linked to ~/.bashrc
+├── .bash_logout            # linked to ~/.bash_logout
+├── .profile                # linked to ~/.profile
+├── zsh/                    # linked to ~/.config/zsh
+├── git/                    # linked to ~/.config/git
+├── tmux/                   # linked to ~/.config/tmux
+├── vim/                    # linked to ~/.config/vim
+├── btop/                   # linked to ~/.config/btop
+├── fcitx5/                 # linked to ~/.config/fcitx5
+├── gh/                     # linked to ~/.config/gh
+├── starship.toml           # linked to ~/.config/starship.toml
+└── setup.sh
 ```
 
-## Configuration Files
+## Install or deploy
 
-All configs are stored under `.config/` and deployed to `~/.config/`:
+```bash
+git clone https://github.com/torrid-fish/dotfiles.git ~/.dotfiles
+~/.dotfiles/setup.sh -y
+```
 
-| Repo Path | Deployed To | Notes |
-|---|---|---|
-| `.config/git/config` | `~/.config/git/config` | Git settings & aliases |
-| `.config/git/commit-template` | `~/.config/git/commit-template` | Conventional commit template |
-| `.config/vim/vimrc` | `~/.config/vim/vimrc` | Vim 9.1+ XDG native |
-| `.config/tmux/tmux.conf` | `~/.config/tmux/tmux.conf` | tmux 3.1+ XDG native |
-| `.config/starship.toml` | `~/.config/starship.toml` | Starship prompt |
-| `.config/fcitx5/` | `~/.config/fcitx5/` | Input method config, profile, confs |
-| `.config/btop/btop.conf` | `~/.config/btop/btop.conf` | System monitor |
-| `.config/gh/config.yml` | `~/.config/gh/config.yml` | GitHub CLI |
+The setup script may install missing tools, then creates symlinks. Existing
+regular files are moved to a timestamped `.bak` path before replacement. It
+does not overwrite repository files.
 
-Legacy dotfiles (`~/.gitconfig`, `~/.vimrc`, `~/.tmux.conf`, `~/.gitmessage.txt`) are automatically backed up with a `.bak` suffix if found, since they override the XDG paths.
+## Sensitive and generated files
 
-## Supported Operating Systems
+Secrets and machine-specific overrides are intentionally not tracked:
 
-- Ubuntu / Debian / Pop!_OS
-- Fedora
-- CentOS / RHEL
-- Arch / Manjaro
-- Alpine Linux
-- macOS
+- `zsh/secrets.zsh`
+- `zsh/*.local`
+- shell completion caches such as `.zcompdump*`
+
+Create local secrets after deployment, for example:
+
+```bash
+vim ~/.config/zsh/secrets.zsh
+chmod 600 ~/.config/zsh/secrets.zsh
+```

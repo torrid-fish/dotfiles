@@ -1,0 +1,11 @@
+[core]
+	editor = vim
+[user]
+	name = torrid-fish
+	email = justinwu6900942@gmail.com
+[init]
+	defaultBranch = main
+[commit]
+	template = ~/.config/git/message
+[alias]
+	sync = !git fetch -p origin main:main && git rebase main
