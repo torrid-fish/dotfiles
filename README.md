@@ -66,11 +66,15 @@ Secrets and per-machine overrides are intentionally not tracked (see `.gitignore
 - `*.local` — machine-local overrides
 - Runtime caches (`plugins/`, `btop/themes/`, `.zcompdump*`, ...) stay as real files/dirs
 
-## Supported Operating Systems
+## Operating system support
 
-- Ubuntu / Debian / Pop!_OS
-- Fedora
-- CentOS / RHEL
-- Arch / Manjaro
-- Alpine Linux
-- macOS
+**Tested on Ubuntu.** Everything beyond that depends on the package:
+
+| Scope | Portability |
+|---|---|
+| `git` `gh` `starship` `tmux` `vim` `btop` | Cross-platform — work on any Unix (Linux, macOS) that has the tool and GNU Stow |
+| `fcitx5` | Linux only (X11/Wayland input method framework) |
+| `zsh` `bash` | Contain machine-specific PATH entries (`texlive/.../x86_64-linux`, a hardcoded LM Studio path, `/usr/local/go/bin`). Unknown paths are harmless no-ops elsewhere, but only meaningful on the author's Linux machines |
+| `setup.sh` | Installer branches exist for apt/dnf/yum/pacman/apk/brew, but only apt has actually been tested |
+
+macOS notes: the zsh configs will load, but the Linux-specific PATH entries are no-ops — prune them or move machine-specific bits into a gitignored `*.local` file.
