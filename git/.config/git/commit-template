@@ -32,7 +32,7 @@
 #
 # ----------------------------------------------------------------------
 
-# <type>(<scope>): <short summary>
+#<type>(<scope>): <short summary>
 
 # If this commit includes a BREAKING CHANGE, add "!" after <scope>) in  
 # the header
@@ -50,7 +50,7 @@
 #   Reduces duplicated logic and standardizes error responses.
 # ----------------------------------------------------------------------
 
-# <body>
+#<body>
 
 # ----------------------------------------------------------------------
 # FOOTER (optional)
@@ -66,6 +66,6 @@
 #   Closes #351, #422
 # ----------------------------------------------------------------------
 
-# <footer>
+#<footer>
 
 

@@ -1,52 +1,76 @@
 # Dotfiles
 
-Personal configuration repository. `~/.dotfiles` is the source of truth;
-configuration files are deployed to their conventional home/XDG locations with
-symbolic links.
+Dotfiles managed by [GNU Stow](https://www.gnu.org/software/stow/) and versioned with git. All configs live under `~/.config/` following the [XDG Base Directory](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html) convention.
 
-## Layout
+## Structure
 
-The repository root directly contains the configuration directories. There is
-no extra `.config` directory inside the repository:
+Each top-level directory is a **stow package** that mirrors the target structure under `$HOME`:
 
-```text
-~/.dotfiles/
-├── .bashrc                 # linked to ~/.bashrc
-├── .bash_logout            # linked to ~/.bash_logout
-├── .profile                # linked to ~/.profile
-├── zsh/                    # linked to ~/.config/zsh
-├── git/                    # linked to ~/.config/git
-├── tmux/                   # linked to ~/.config/tmux
-├── vim/                    # linked to ~/.config/vim
-├── btop/                   # linked to ~/.config/btop
-├── fcitx5/                 # linked to ~/.config/fcitx5
-├── gh/                     # linked to ~/.config/gh
-├── starship.toml           # linked to ~/.config/starship.toml
-└── setup.sh
+```
+dotfiles/
+├── bash/         → ~/.bashrc, ~/.bash_logout, ~/.profile
+├── btop/         → ~/.config/btop/btop.conf
+├── fcitx5/       → ~/.config/fcitx5/{config,profile,conf/*.conf}
+├── gh/           → ~/.config/gh/config.yml
+├── git/          → ~/.config/git/{config,commit-template,ignore}
+├── starship/     → ~/.config/starship.toml
+├── tmux/         → ~/.config/tmux/tmux.conf
+├── vim/          → ~/.config/vim/vimrc
+├── zsh/          → ~/.zshenv, ~/.zshrc
+└── setup.sh      → one-shot installer (installs stow, symlinks everything)
 ```
 
-## Install or deploy
+**Note on granularity:** directories containing runtime artifacts (e.g. `gh/hosts.yml` with login tokens, `tmux/plugins/`, `btop/themes/`, fcitx5 caches) are **not** symlinked as a whole — only the actual config files are, so junk and secrets never end up in this repo.
+
+## Quick start (new machine)
 
 ```bash
-git clone https://github.com/torrid-fish/dotfiles.git ~/.dotfiles
-~/.dotfiles/setup.sh -y
+git clone git@github.com:torrid-fish/dotfiles.git ~/Code/dotfiles
+cd ~/Code/dotfiles
+./setup.sh -y
 ```
 
-The setup script may install missing tools, then creates symlinks. Existing
-regular files are moved to a timestamped `.bak` path before replacement. It
-does not overwrite repository files.
+The script will install stow if missing, back up any conflicting real files to `~/.dotfiles-backup/`, and symlink every package into `$HOME`.
 
-## Sensitive and generated files
+## Manual stow usage
 
-Secrets and machine-specific overrides are intentionally not tracked:
-
-- `zsh/secrets.zsh`
-- `zsh/*.local`
-- shell completion caches such as `.zcompdump*`
-
-Create local secrets after deployment, for example:
+From the repo root:
 
 ```bash
-vim ~/.config/zsh/secrets.zsh
-chmod 600 ~/.config/zsh/secrets.zsh
+stow -t ~ --restow git        # link / re-link one package
+stow -t ~ -D git              # unlink one package
+stow -t ~ --restow btop fcitx5 gh git starship tmux vim   # everything
+./setup.sh --unstow           # unlink all packages
 ```
+
+## Packages
+
+| Package | Contents |
+|---|---|
+| `bash` | bashrc / profile / bash_logout |
+| `btop` | System monitor config (btop 1.4+) |
+| `fcitx5` | Input method: Boshiamy, Mozc, punctuation, shortcuts |
+| `gh` | GitHub CLI aliases & preferences |
+| `git` | Git settings, conventional commit template, global ignore |
+| `starship` | Cross-shell prompt |
+| `tmux` | Terminal multiplexer config (TPM plugins auto-bootstrap on first run) |
+| `vim` | Vim 9.1+ with XDG-native vimrc |
+| `zsh` | Zsh env, Oh-My-Zsh, per-tool PATH setup |
+
+## Sensitive and machine-specific files
+
+Secrets and per-machine overrides are intentionally not tracked (see `.gitignore`):
+
+- `gh/hosts.yml` (login tokens) — only `config.yml` is symlinked
+- `zsh/secrets.zsh` — create locally after deployment, source it from `.zshrc` if needed
+- `*.local` — machine-local overrides
+- Runtime caches (`plugins/`, `btop/themes/`, `.zcompdump*`, ...) stay as real files/dirs
+
+## Supported Operating Systems
+
+- Ubuntu / Debian / Pop!_OS
+- Fedora
+- CentOS / RHEL
+- Arch / Manjaro
+- Alpine Linux
+- macOS

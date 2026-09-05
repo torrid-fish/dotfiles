@@ -1,14 +1,15 @@
-set nocompatible
 set number
 set mouse=a
 set cursorline
+set ruler
 set laststatus=2
 
 set expandtab
 set tabstop=4
 set shiftwidth=4
 set softtabstop=4
-filetype plugin indent on
+set autoindent
+set smartindent
 
 set foldmethod=indent
 set foldcolumn=2

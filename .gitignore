@@ -1,8 +1,9 @@
-# Local secrets and machine-specific overrides
+# Secrets — never track these even if they end up inside a package dir
+gh/.config/gh/hosts.yml
 zsh/secrets.zsh
-.config/zsh/*.local
-.config/*/*.local
+*.local
 
-# Generated/cache files
+# Generated / cache files
 .zcompdump*
 *.zwc
+*.log

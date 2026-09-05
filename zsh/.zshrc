@@ -131,6 +131,9 @@ eval "$(starship init zsh)"
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 
+# go
+export PATH=$PATH:/usr/local/go/bin
+
 # ledger
 export LEDGER_FILE="$HOME/ledger/main.journal"
 

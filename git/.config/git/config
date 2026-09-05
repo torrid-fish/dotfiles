@@ -1,0 +1,25 @@
+[user]
+    email = justinwu6900942@gmail.com
+    name = torrid-fish
+[filter "lfs"]
+    process = git-lfs filter-process
+    required = true
+    clean = git-lfs clean -- %f
+    smudge = git-lfs smudge -- %f
+[core]
+    editor = vim
+[commit]
+    template = ~/.config/git/commit-template
+[init]
+    defaultBranch = main
+[alias]
+    sync = !git fetch -p origin main:main && git rebase main
+    graph = !git log --graph --oneline --decorate --all
+[pull]
+    rebase = true
+[credential "https://github.com"]
+	helper = 
+	helper = !/usr/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/usr/bin/gh auth git-credential
