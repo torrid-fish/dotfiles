@@ -145,7 +145,7 @@ backup_conflicts() {
             print_warning "Backed up ~/$rel -> $backup_root/$rel"
             backed_up=1
         fi
-    done < <(cd "$SCRIPT_DIR/$pkg" && find .config -type f -o -type l | sed 's|^\./||')
+    done < <(cd "$SCRIPT_DIR/$pkg" && find . \( -type f -o -type l \) | sed 's|^\./||')
 
     return 0
 }
