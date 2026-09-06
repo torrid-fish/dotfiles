@@ -7,3 +7,4 @@ zsh/secrets.zsh
 .zcompdump*
 *.zwc
 *.log
+node_modules/

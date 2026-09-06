@@ -8,11 +8,13 @@ Each top-level directory is a **stow package** that mirrors the target structure
 
 ```
 dotfiles/
+├── agents/       → ~/.agents/skills/* (cross-agent skills, read natively by pi & opencode)
 ├── bash/         → ~/.bashrc, ~/.bash_logout, ~/.profile
 ├── btop/         → ~/.config/btop/btop.conf
 ├── fcitx5/       → ~/.config/fcitx5/{config,profile,conf/*.conf}
 ├── gh/           → ~/.config/gh/config.yml
 ├── git/          → ~/.config/git/{config,commit-template,ignore}
+├── pi/           → ~/.pi/agent/{prompts,extensions} (portable parts only)
 ├── starship/     → ~/.config/starship.toml
 ├── tmux/         → ~/.config/tmux/tmux.conf
 ├── vim/          → ~/.config/vim/vimrc
@@ -47,11 +49,13 @@ stow -t ~ --restow btop fcitx5 gh git starship tmux vim   # everything
 
 | Package | Contents |
 |---|---|
+| `agents` | Cross-agent skills in `~/.agents/skills/`: exa-agent, exa-search, tmux-pane-collab, ghidra, git-master, playwright-cli, convert-documents-to-markdown, antigravity-looker |
 | `bash` | bashrc / profile / bash_logout |
 | `btop` | System monitor config (btop 1.4+) |
 | `fcitx5` | Input method: Boshiamy, Mozc, punctuation, shortcuts |
 | `gh` | GitHub CLI aliases & preferences |
 | `git` | Git settings, conventional commit template, global ignore |
+| `pi` | pi coding agent: `/init` + `/review` prompt templates, `tok-speed-footer` extension (needs `npm install` in `~/.pi/agent/extensions/` once). `settings.json`/`models.json`/`auth.json` are machine-local — never stowed |
 | `starship` | Cross-shell prompt |
 | `tmux` | Terminal multiplexer config (TPM plugins auto-bootstrap on first run) |
 | `vim` | Vim 9.1+ with XDG-native vimrc |

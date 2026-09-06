@@ -1,0 +1,7 @@
+{
+  "name": "tok-speed-footer",
+  "version": "1.0.0",
+  "dependencies": {
+    "tiktoken": "^1.0.20"
+  }
+}

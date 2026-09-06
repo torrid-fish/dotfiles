@@ -126,7 +126,3 @@ export NVM_DIR="$HOME/.nvm"
 # opencode
 export PATH=/home/torridfish/.opencode/bin:$PATH
 . "$HOME/.cargo/env"
-
-# Added by LM Studio CLI (lms)
-export PATH="$PATH:/home/torridfish/.lmstudio/bin"
-# End of LM Studio CLI section

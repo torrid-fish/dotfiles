@@ -134,13 +134,6 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 # go
 export PATH=$PATH:/usr/local/go/bin
 
-# ledger
-export LEDGER_FILE="$HOME/ledger/main.journal"
-
-# Added by LM Studio CLI (lms)
-export PATH="$PATH:/home/torridfish/.lmstudio/bin"
-# End of LM Studio CLI section
-
 # --- ssh -------------------------------------------------------------------
 # Plain ssh is the default. kitten ssh runs its bootstrap as a command, and sshd
 # only prints the MOTD for interactive sessions -- so kitten ssh loses the banner.
