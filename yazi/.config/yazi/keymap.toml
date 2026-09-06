@@ -1,0 +1,11 @@
+[mgr]
+prepend_keymap = [
+    { 
+        on = ["M","s"], run = "plugin sshfs -- menu",
+        desc = "Open SSHFS options" 
+    },
+    {
+        on = "!", for = "unix", run = 'shell "$SHELL" --block',
+        desc = "Open $SHELL here"
+    }
+]

@@ -1,0 +1,10 @@
+[mgr]
+  ratio = [1, 2, 4]
+  show_hidden = true
+
+[preview]
+  max_width    = 600
+  max_height   = 900
+  image_filter = "lanczos3"
+  image_quality = 75
+  image_delay   = 30
