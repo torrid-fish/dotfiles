@@ -1,0 +1,51 @@
+// Zed keymap
+//
+// For information on binding keys, see the Zed
+// documentation: https://zed.dev/docs/key-bindings
+//
+// To see the default key bindings run `zed: open default keymap`
+// from the command palette.
+[
+    {
+        "context": "Workspace",
+        "bindings": {
+            // "shift shift": "file_finder::Toggle"
+        },
+    },
+    {
+        "context": "Editor && vim_mode == insert",
+        "bindings": {
+            // "j k": "vim::NormalBefore"
+        },
+    },
+    {
+        "context": "Workspace",
+        "bindings": {
+            "ctrl-?": "agent::ToggleFocus",
+        },
+    },
+    {
+        "context": "(Editor && mode == full)",
+        "bindings": {
+            "alt-z": "editor::ToggleSoftWrap",
+        },
+    },
+    {
+        "context": "Workspace",
+        "bindings": {
+            "ctrl-alt-s": "multi_workspace::ToggleWorkspaceSidebar"
+        }
+    },
+    {
+        "context": "Workspace",
+        "unbind": {
+            "ctrl-alt-j": "multi_workspace::ToggleWorkspaceSidebar"
+        }
+    },
+    {
+        "context": "Workspace",
+        "unbind": {
+            "ctrl-alt-s": "workspace::SaveAll"
+        }
+    }
+]
